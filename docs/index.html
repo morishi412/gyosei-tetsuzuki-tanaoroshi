@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>【非公式】行政手続等の棚卸調査ダッシュボード</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="spinner" aria-hidden="true"></div>
+  <p id="loaderMsg">データベースを読み込んでいます…</p>
+  <p class="bignum">行政手続 76,275 種類</p>
+</div>
+
+<div class="unofficial-banner" role="note">
+  ⚠ 非公式サイト｜これはデジタル庁の公表データを個人が閲覧用に再構成した非公式ビューアです。
+</div>
+<header class="site-header">
+  <div class="site-header__bar"></div>
+  <div class="site-header__inner">
+    <div class="wordmark">
+      <span class="wordmark__tag">非公式</span>
+      行政手続ビューア
+      <small>UNOFFICIAL VIEWER</small>
+    </div>
+    <div class="site-title">
+      <h1>行政手続等の棚卸調査 ダッシュボード<span class="badge-unofficial">非公式</span></h1>
+      <p>令和7年度調査（調査時点：令和7年11月1日／結果公表：2026年8月26日）— デジタル庁の公表データ（出典）を個人が検索・集計用に再構成した非公式ビューアです</p>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" id="tab-overview" role="tab" aria-selected="true" aria-controls="panel-overview">調査結果の概要</button>
+    <button class="tab" id="tab-search" role="tab" aria-selected="false" aria-controls="panel-search">手続を検索</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ 概要パネル ============ -->
+  <section class="panel is-active" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+
+    <div class="section">
+      <h2>全体サマリー</h2>
+      <p class="lead">本ダッシュボードに読み込んだ調査データ（1手続=1行）から集計した値です。数値・グラフの項目をクリックすると、その手続一覧へドリルダウンできます。</p>
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <p class="notice" id="kpiNote"></p>
+    </div>
+
+    <div class="two-col">
+      <div class="section">
+        <h2>オンライン化の実施状況</h2>
+        <p class="lead">手続の種類数ベース</p>
+        <div class="donut-wrap">
+          <svg class="donut" id="donutOnline" viewBox="0 0 42 42" role="img" aria-label="オンライン化実施状況の内訳"></svg>
+          <ul class="donut-legend" id="donutOnlineLegend"></ul>
+        </div>
+      </div>
+      <div class="section">
+        <h2>オンライン化されていない要因</h2>
+        <p class="lead">「未実施／適用除外／その他」の手続における懸念点（14-2）</p>
+        <ul class="bars" id="barsReason"></ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>所管府省庁別のオンライン化状況</h2>
+      <p class="lead">手続種類数の多い順。青＝オンライン化実施済の割合</p>
+      <div class="legend">
+        <span><i style="background:#0017c1"></i>オンライン化率（実施済 ÷ 全手続）</span>
+        <span>数値＝手続種類数</span>
+      </div>
+      <ul class="bars" id="barsMinistry"></ul>
+    </div>
+
+    <div class="two-col">
+      <div class="section">
+        <h2>手続類型別</h2>
+        <p class="lead">青＝オンライン化率、数値＝手続種類数</p>
+        <ul class="bars" id="barsType"></ul>
+      </div>
+      <div class="section">
+        <h2>年間手続件数の規模別</h2>
+        <p class="lead">「19-1 総手続件数」の回答値で区分。青＝オンライン化率</p>
+        <ul class="bars" id="barsVolume"></ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>参考：デジタルファースト原則の達成状況</h2>
+      <p class="lead">オンライン化率の推移（出典：調査結果概要 p.15）</p>
+      <ul class="bars" id="barsTrend"></ul>
+      <p class="notice">
+        令和元年度調査の約12％から令和7年度調査の53.7％へ、オンラインで申請・届出等が可能な手続の割合は着実に拡大。
+        件数ベースのオンライン利用率は86.0％に達し、高頻度手続のオンライン化は概ね完了したとされています。
+      </p>
+    </div>
+
+    <p class="notice" id="srcNote">
+      出典：デジタル庁「行政手続等の棚卸調査結果（令和7年度）」<br>
+      ・データ本体：<code>20260826_procedures_survey_result_outline_02.xlsx</code><br>
+      ・調査結果概要：<code>20260826_procedures_survey_result_outline_01.pdf</code>／解説資料：<code>20260826_procedures_survey_result_outline_03.pdf</code>
+    </p>
+  </section>
+
+  <!-- ============ 検索パネル ============ -->
+  <section class="panel" id="panel-search" role="tabpanel" aria-labelledby="tab-search">
+    <div class="section">
+      <h2>手続を検索</h2>
+      <p class="lead">キーワード（手続名・法令名・手続ID）と条件で絞り込みます。</p>
+      <form class="search-form" id="searchForm">
+        <div class="field field--wide">
+          <label for="q">キーワード</label>
+          <input type="search" id="q" placeholder="例：旅券、届出、建築基準法 …（スペース区切りでAND検索）" autocomplete="off" />
+        </div>
+        <div class="field"><label for="f-ministry">所管府省庁</label><select id="f-ministry"></select></div>
+        <div class="field"><label for="f-type">手続類型</label><select id="f-type"></select></div>
+        <div class="field"><label for="f-online">オンライン化の実施状況</label><select id="f-online"></select></div>
+        <div class="field"><label for="f-subject">手続主体（立場を含む／回答値）</label><select id="f-subject"></select></div>
+        <div class="field"><label for="f-receiver">手続の受け手（立場を含む／回答値）</label><select id="f-receiver"></select></div>
+        <div class="field"><label for="f-fee">手数料等の納付有無</label><select id="f-fee"></select></div>
+        <div class="field"><label for="f-common">府省共通手続</label><select id="f-common"></select></div>
+        <div class="field"><label for="f-event-p">ライフイベント（個人）</label><select id="f-event-p"></select></div>
+        <div class="field"><label for="f-event-c">ライフイベント（法人）</label><select id="f-event-c"></select></div>
+        <div class="field"><label for="f-shigyo">申請に関連する士業</label><select id="f-shigyo"></select></div>
+        <div class="field"><label for="f-sort">並び替え</label><select id="f-sort"></select></div>
+        <div class="form-actions field--wide">
+          <button type="submit" class="btn btn--primary">検索</button>
+          <button type="button" class="btn btn--ghost" id="resetBtn">条件をクリア</button>
+          <button type="button" class="btn btn--ghost" id="csvBtn">検索結果をCSV出力</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="section">
+      <div class="chips" id="activeFilters"></div>
+      <div class="result-meta">
+        <div><strong id="resultCount">—</strong> 件</div>
+        <div class="result-meta__right">
+          <label class="switch" title="セルにカーソルを合わせると、その値が検索結果全体の何％かを表示します">
+            <input type="checkbox" id="cellPctToggle" />
+            <span>セルの割合をツールチップ表示（実験）</span>
+          </label>
+          <span id="resultRange"></span>
+        </div>
+      </div>
+      <div class="pager" id="pagerTop"></div>
+      <div class="colnav" id="colNav"></div>
+      <div class="table-scroll">
+        <table class="data" id="resultTable">
+          <thead id="resultHead"></thead>
+          <tbody id="resultBody"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="pager"></div>
+    </div>
+  </section>
+</main>
+
+<div class="modal-backdrop" id="colCfgBackdrop"></div>
+<div class="modal" id="colCfg" role="dialog" aria-modal="true" aria-labelledby="colCfgTitle" aria-hidden="true">
+  <div class="modal__head">
+    <h3 id="colCfgTitle">一覧に表示する列を選ぶ</h3>
+    <button class="drawer__close" id="colCfgClose" aria-label="閉じる">&times;</button>
+  </div>
+  <div class="modal__body" id="colCfgBody"></div>
+  <div class="modal__foot">
+    <button type="button" class="btn btn--ghost" id="colCfgReset">既定に戻す</button>
+    <button type="button" class="btn btn--primary" id="colCfgApply">この内容で表示</button>
+  </div>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="手続の詳細">
+  <div class="drawer__head">
+    <div>
+      <h3 id="drawerTitle">—</h3>
+      <div class="sub" id="drawerSub"></div>
+    </div>
+    <button class="drawer__close" id="drawerClose" aria-label="閉じる">&times;</button>
+  </div>
+  <div class="drawer__body" id="drawerBody"></div>
+</aside>
+
+<footer class="site-footer">
+  <p class="src"><strong>【非公式サイト】</strong>本サイトは個人が作成した非公式のビューアであり、デジタル庁・日本政府が運営・監修するものではありません。デジタル庁および日本政府とは一切関係ありません。</p>
+  <p>データ出典：デジタル庁「行政手続等の棚卸調査結果（令和7年度）」。元データの著作権はデジタル庁に帰属します。正確な情報は<strong>デジタル庁の公式発表</strong>をご確認ください。</p>
+</footer>
+
+<script src="vendor/sql-wasm.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# ビルド中間物
+_build/
+docs/procedures.db
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+*.swp
+
+# Claude Code ローカル設定
+.claude/settings.local.json

@@ -1,0 +1,5 @@
+*.gz   binary
+*.wasm binary
+*.xlsx binary
+*.pdf  binary
+*.db   binary
