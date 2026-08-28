@@ -458,6 +458,8 @@ table.data td.col-extra {
   padding: 20px 24px 28px;
 }
 .site-footer .src { margin: 0 0 6px; }
+.site-footer .src-link { margin: 8px 0 0; word-break: break-all; }
+.site-footer .src-link a { color: var(--da-blue); }
 
 /* ---------- ドリルダウン（クリック可能要素／チップ） ---------- */
 .is-clickable { cursor: pointer; transition: background .12s, box-shadow .12s; }
